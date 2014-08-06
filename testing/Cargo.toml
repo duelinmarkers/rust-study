@@ -1,0 +1,5 @@
+[package]
+
+name = "testing"
+version = "0.0.1"
+authors = ["John Hume <duelin.markers@gmail.com>"]
