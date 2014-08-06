@@ -4,7 +4,7 @@ use std::rand;
 fn main() {
     println!("Guess the number!");
 
-    let secret_number = (rand::random::<int>() % 100i) + 1i;
+    let secret_number = (rand::random::<uint>() % 100) + 1;
 
     println!("The secret number is: {}", secret_number);
 
