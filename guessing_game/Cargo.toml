@@ -3,3 +3,6 @@
 name = "guessing_game"
 version = "0.0.1"
 authors = ["John Hume <duelin.markers@gmail.com>"]
+
+[dependencies]
+rand = "0.3"

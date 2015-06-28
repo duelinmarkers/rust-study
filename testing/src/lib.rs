@@ -1,10 +1,10 @@
-pub fn add_3_and_times_4(x : int) -> int {
+pub fn add_3_and_times_4(x : i32) -> i32 {
   times_4(add_3(x))
 }
 
-fn add_3(x : int) -> int { x + 3 }
+fn add_3(x : i32) -> i32 { x + 3 }
 
-fn times_4(x : int) -> int { x * 4 }
+fn times_4(x : i32) -> i32 { x * 4 }
 
 #[cfg(test)]
 mod test {
