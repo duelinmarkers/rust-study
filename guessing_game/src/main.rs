@@ -7,14 +7,14 @@ use std::cmp::Ordering;
 fn main() {
     println!("Guess the number!");
 
-    let secret_number = (rand::random::<usize>() % 100) + 1;
+    let secret_number = (rand::random::<u8>() % 100) + 1;
 
     loop {
         println!("Please input your guess.");
 
         let mut s = String::new();
         let _ = io::stdin().read_line(&mut s).unwrap();
-        let input_num = s.trim().parse::<usize>().ok();
+        let input_num = s.trim().parse::<u8>().ok();
 
         let num = match input_num {
             Some(num) => num,
@@ -37,7 +37,7 @@ fn main() {
     }
 }
 
-fn cmp(a: usize, b: usize) -> Ordering {
+fn cmp(a: u8, b: u8) -> Ordering {
     if a < b { Ordering::Less }
     else if a > b { Ordering::Greater }
     else { Ordering::Equal }
