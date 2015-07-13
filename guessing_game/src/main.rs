@@ -3,11 +3,13 @@ extern crate rand;
 use std::io;
 use std::cmp::Ordering;
 
+const MAX_NUM : u8 = 100;
+
 #[allow(dead_code)]
 fn main() {
-    println!("Guess the number!");
+    println!("Guess the number between 1 and {}!", MAX_NUM);
 
-    let secret_number = (rand::random::<u8>() % 100) + 1;
+    let secret_number = (rand::random::<u8>() % MAX_NUM) + 1;
 
     loop {
         println!("Please input your guess.");
@@ -17,18 +19,16 @@ fn main() {
 
         if let Some(num) = s.trim().parse::<u8>().ok() {
 
-            println!("You guessed: {}", num);
-
             match cmp(num, secret_number) {
-                Ordering::Less    => println!("Too small!"),
-                Ordering::Greater => println!("Too big!"),
+                Ordering::Less    => println!("{} is too small!", num),
+                Ordering::Greater => println!("{} is too big!", num),
                 Ordering::Equal   => {
-                    println!("You win!");
+                    println!("{} is the number -- You win!", num);
                     return;
                 },
             }
         } else {
-            println!("Please input a number!");
+            println!("Please input a number between 1 and {}!", MAX_NUM);
             continue;
         }
 
