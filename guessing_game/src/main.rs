@@ -14,26 +14,24 @@ fn main() {
 
         let mut s = String::new();
         let _ = io::stdin().read_line(&mut s).unwrap();
-        let input_num = s.trim().parse::<u8>().ok();
 
-        let num = match input_num {
-            Some(num) => num,
-            None      => {
-                println!("Please input a number!");
-                continue;
+        if let Some(num) = s.trim().parse::<u8>().ok() {
+
+            println!("You guessed: {}", num);
+
+            match cmp(num, secret_number) {
+                Ordering::Less    => println!("Too small!"),
+                Ordering::Greater => println!("Too big!"),
+                Ordering::Equal   => {
+                    println!("You win!");
+                    return;
+                },
             }
-        };
-
-        println!("You guessed: {}", num);
-
-        match cmp(num, secret_number) {
-            Ordering::Less    => println!("Too small!"),
-            Ordering::Greater => println!("Too big!"),
-            Ordering::Equal   => {
-                println!("You win!");
-                return;
-            },
+        } else {
+            println!("Please input a number!");
+            continue;
         }
+
     }
 }
 
