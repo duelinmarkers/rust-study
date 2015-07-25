@@ -91,17 +91,18 @@ mod tests {
     fn set_scale() {
         assert_eq!(Decimal::new(100, 2), Decimal::new(1000, 3).set_scale(2));
         assert_eq!(Decimal::new(100, 2), Decimal::new(10, 1).set_scale(2));
+        assert_eq!(Decimal::new(12, 1), Decimal::new(125, 2).set_scale(1));
     }
     #[test]
-    fn add_decimals_with_different_scales() {
+    fn adding_decimals_with_different_scales_results_in_larger_scale() {
         assert_eq!(Decimal::new(100, 2), Decimal::new(9, 1) + Decimal::new(10, 2));
     }
     #[test]
-    fn subtract_decimals_with_different_scales() {
+    fn subtracting_decimals_with_different_scales_results_in_larger_scale() {
         assert_eq!(Decimal::new(100, 2), Decimal::new(11, 1) - Decimal::new(10, 2));
     }
     #[test]
-    fn use_does_not_consume_decimals() { // or are they just being copied?
+    fn performing_ops_on_decimals_does_not_preclude_further_use() {
         let fifty_cents = Decimal::new(5, 1).set_scale(2);
         let buck_fifty = Decimal::new(150, 2);
         let two_dollars = Decimal::new(200, 2);
