@@ -64,6 +64,20 @@ impl ops::Mul for Decimal {
     }
 }
 
+impl ops::Mul<i64> for Decimal {
+    type Output = Decimal;
+    fn mul(self, i: i64) -> Decimal {
+        Decimal::new(self.unscaled * i, self.scale)
+    }
+}
+
+impl ops::Mul<Decimal> for i64 {
+    type Output = Decimal;
+    fn mul(self, d: Decimal) -> Decimal {
+        Decimal::new(self * d.unscaled, d.scale)
+    }
+}
+
 fn downscale(n: i64, down_by: u32) -> i64 {
     let mut result = n;
     for _ in 0..down_by {
@@ -113,6 +127,11 @@ mod tests {
         assert_eq!(Decimal::new(1500, 1), Decimal::new(100, 0) * Decimal::new(15, 1));
         assert_eq!(Decimal::new(2500, 2), Decimal::new(100, 0) * Decimal::new(25, 2));
         assert_eq!(Decimal::new(49995, 5), Decimal::new(15, 1) * Decimal::new(3333, 4));
+    }
+    #[test]
+    fn multiplying_decimal_by_int_is_commutative() {
+        assert_eq!(Decimal::new(246, 2), Decimal::new(123, 2) * 2);
+        assert_eq!(Decimal::new(246, 2), 2 * Decimal::new(123, 2));
     }
     #[test]
     fn performing_ops_on_decimals_does_not_preclude_further_use() {
