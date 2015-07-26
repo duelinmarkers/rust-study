@@ -5,15 +5,15 @@ use std::fmt;
 #[derive(Debug, Clone, Copy)]
 pub struct Decimal {
     unscaled: i64,
-    scale: i64
+    scale: u32
 }
 
 impl Decimal {
-    fn new(unscaled: i64, scale: i64) -> Decimal {
+    fn new(unscaled: i64, scale: u32) -> Decimal {
         Decimal { unscaled: unscaled, scale: scale }
     }
 
-    pub fn set_scale(self, scale: i64) -> Decimal {
+    pub fn set_scale(self, scale: u32) -> Decimal {
         match self.scale.cmp(&scale) {
             Ordering::Equal => self,
             Ordering::Greater => Decimal::new(downscale(self.unscaled, self.scale - scale), scale),
@@ -25,7 +25,7 @@ impl Decimal {
 impl fmt::Display for Decimal {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         write!(fmt, "{:.*}", self.scale as usize,
-               (self.unscaled as f64) / (10i64.pow(self.scale as u32) as f64))
+               (self.unscaled as f64) / (10i64.pow(self.scale) as f64))
     }
 }
 
@@ -57,7 +57,7 @@ impl ops::Sub for Decimal {
     }
 }
 
-fn downscale(n: i64, down_by: i64) -> i64 {
+fn downscale(n: i64, down_by: u32) -> i64 {
     let mut result = n;
     for _ in 0..down_by {
         result = result / 10;
@@ -65,7 +65,7 @@ fn downscale(n: i64, down_by: i64) -> i64 {
     result
 }
 
-fn upscale(n: i64, up_by: i64) -> i64 {
+fn upscale(n: i64, up_by: u32) -> i64 {
     let mut result = n;
     for _ in 0..up_by {
         result = result * 10;
