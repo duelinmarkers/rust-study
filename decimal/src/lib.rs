@@ -116,5 +116,11 @@ mod tests {
     #[test]
     fn displays_with_decimal_point() {
         assert_eq!("1.50", format!("{}", Decimal::new(150, 2)));
+        assert_eq!("0.0010", format!("{}", Decimal::new(10, 4)));
+    }
+    #[test]
+    fn supports_debug_format() {
+        assert_eq!("Decimal { unscaled: 1, scale: 2 }",
+                   format!("{:?}", Decimal::new(1, 2)));
     }
 }
