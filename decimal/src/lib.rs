@@ -57,6 +57,13 @@ impl ops::Sub for Decimal {
     }
 }
 
+impl ops::Mul for Decimal {
+    type Output = Decimal;
+    fn mul(self, other: Decimal) -> Decimal {
+        Decimal::new(self.unscaled * other.unscaled, self.scale + other.scale)
+    }
+}
+
 fn downscale(n: i64, down_by: u32) -> i64 {
     let mut result = n;
     for _ in 0..down_by {
@@ -100,6 +107,12 @@ mod tests {
     #[test]
     fn subtracting_decimals_with_different_scales_results_in_larger_scale() {
         assert_eq!(Decimal::new(100, 2), Decimal::new(11, 1) - Decimal::new(10, 2));
+    }
+    #[test]
+    fn multiplying_decimals_results_in_summed_scales() {
+        assert_eq!(Decimal::new(1500, 1), Decimal::new(100, 0) * Decimal::new(15, 1));
+        assert_eq!(Decimal::new(2500, 2), Decimal::new(100, 0) * Decimal::new(25, 2));
+        assert_eq!(Decimal::new(49995, 5), Decimal::new(15, 1) * Decimal::new(3333, 4));
     }
     #[test]
     fn performing_ops_on_decimals_does_not_preclude_further_use() {
