@@ -26,13 +26,19 @@ impl Decimal {
 impl str::FromStr for Decimal {
     type Err = ParseDecimalError;
     fn from_str(s: &str) -> Result<Decimal, ParseDecimalError> {
+        use DecimalErrorKind::*;
         let mut unscaled = 0i64;
-        let mut signum = 1i64;
         let mut scale = 0u32;
+        let mut index = 0u32;
+        let mut signum = 1i64;
         let mut seen_decimal = false;
         for c in s.chars() {
             match c {
-                '-' => signum = -1,
+                '-' => if index == 0 {
+                    signum = -1
+                } else {
+                    return Err(ParseDecimalError { kind: InvalidDigit })
+                },
                 c if c.is_digit(10) => {
                     unscaled = (unscaled * 10) + c.to_digit(10).unwrap() as i64;
                     if seen_decimal {
@@ -40,10 +46,15 @@ impl str::FromStr for Decimal {
                     }
                 },
                 '.' => seen_decimal = true,
-                _ => return Err(ParseDecimalError { kind: DecimalErrorKind::InvalidDigit })
+                _ => return Err(ParseDecimalError { kind: InvalidDigit })
             }
+            index += 1;
         }
-        Ok(Decimal::new(unscaled * signum, scale))
+        if index == 0 {
+            Err(ParseDecimalError { kind: Empty })
+        } else {
+            Ok(Decimal::new(unscaled * signum, scale))
+        }
     }
 }
 
@@ -52,6 +63,7 @@ pub struct ParseDecimalError { kind: DecimalErrorKind }
 
 #[derive(Debug, Clone, PartialEq)]
 enum DecimalErrorKind {
+    Empty,
     InvalidDigit,
 }
 
@@ -182,6 +194,10 @@ mod tests {
     fn parse_failures() {
         assert_eq!(Err(ParseDecimalError { kind: DecimalErrorKind::InvalidDigit }),
                    "2g".parse::<Decimal>());
+        assert_eq!(Err(ParseDecimalError { kind: DecimalErrorKind::InvalidDigit }),
+                   "2-2".parse::<Decimal>());
+        assert_eq!(Err(ParseDecimalError { kind: DecimalErrorKind::Empty }),
+                   "".parse::<Decimal>());
     }
     #[test]
     fn adding_decimals_with_different_scales_results_in_larger_scale() {
