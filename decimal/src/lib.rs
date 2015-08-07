@@ -30,22 +30,18 @@ impl str::FromStr for Decimal {
         let mut unscaled = 0i64;
         let mut scale = 0u32;
         let mut index = 0u32;
-        let mut signum = 1i64;
+        let mut negative = false;
         let mut seen_decimal = false;
         for c in s.chars() {
             match c {
-                '-' => if index == 0 {
-                    signum = -1
-                } else {
-                    return Err(ParseDecimalError { kind: InvalidDigit })
-                },
+                '-' if index == 0 => negative = true,
+                '.' => seen_decimal = true,
                 c if c.is_digit(10) => {
                     unscaled = (unscaled * 10) + c.to_digit(10).unwrap() as i64;
                     if seen_decimal {
                         scale += 1;
                     }
                 },
-                '.' => seen_decimal = true,
                 _ => return Err(ParseDecimalError { kind: InvalidDigit })
             }
             index += 1;
@@ -53,7 +49,7 @@ impl str::FromStr for Decimal {
         if index == 0 {
             Err(ParseDecimalError { kind: Empty })
         } else {
-            Ok(Decimal::new(unscaled * signum, scale))
+            Ok(Decimal::new(if negative { -unscaled } else { unscaled }, scale))
         }
     }
 }
