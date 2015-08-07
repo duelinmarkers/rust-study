@@ -90,6 +90,18 @@ impl ops::Div for Decimal {
     }
 }
 
+impl ops::Rem for Decimal {
+    type Output = Decimal;
+    fn rem(self, other: Decimal) -> Decimal {
+        let s = if other.scale > self.scale {
+            self.set_scale(other.scale)
+        } else {
+            self
+        };
+        Decimal::new(s.unscaled % other.unscaled, s.scale - other.scale)
+    }
+}
+
 fn downscale(n: i64, down_by: u32) -> i64 {
     let mut result = n;
     for _ in 0..down_by {
@@ -149,6 +161,23 @@ mod tests {
     fn dividing_decimal_by_decimal() {
         assert_eq!(Decimal::new(137, 1), Decimal::new(685, 2) / Decimal::new(5, 1));
         assert_eq!(Decimal::new(30, 0), Decimal::new(75, 1) / Decimal::new(25, 2));
+    }
+    #[test]
+    fn dividing_decimals_truncates_remainder() {
+        assert_eq!(Decimal::new(2, 0), Decimal::new(5, 0) / Decimal::new(2, 0));
+        assert_eq!(Decimal::new(212, 2), Decimal::new(425, 2) / Decimal::new(2, 0));
+    }
+    #[test]
+    fn get_remainder() {
+        assert_eq!(Decimal::new(1, 0), Decimal::new(5, 0) % Decimal::new(2, 0));
+        assert_eq!(Decimal::new(1, 2), Decimal::new(425, 2) % Decimal::new(2, 0));
+    }
+    #[test]
+    fn ops_on_negative_decimals() {
+        assert_eq!(Decimal::new(10, 1), Decimal::new(12, 1) + Decimal::new(-2, 1));
+        assert_eq!(Decimal::new(-1, 3), Decimal::new(0, 0) - Decimal::new(1, 3));
+        assert_eq!(Decimal::new(1, 0), Decimal::new(-1, 0) * Decimal::new(-1, 0));
+        assert_eq!(Decimal::new(-3, 0), Decimal::new(3, 0) / Decimal::new(-1, 0));
     }
     #[test]
     fn performing_ops_on_decimals_does_not_preclude_further_use() {
