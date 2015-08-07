@@ -1,6 +1,7 @@
 use std::ops;
 use std::cmp::Ordering;
 use std::fmt;
+use std::str;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Decimal {
@@ -20,6 +21,38 @@ impl Decimal {
             Ordering::Less => Decimal::new(upscale(self.unscaled, scale - self.scale), scale)
         }
     }
+}
+
+impl str::FromStr for Decimal {
+    type Err = ParseDecimalError;
+    fn from_str(s: &str) -> Result<Decimal, ParseDecimalError> {
+        let mut unscaled = 0i64;
+        let mut signum = 1i64;
+        let mut scale = 0u32;
+        let mut seen_decimal = false;
+        for c in s.chars() {
+            match c {
+                '-' => signum = -1,
+                c if c.is_digit(10) => {
+                    unscaled = (unscaled * 10) + c.to_digit(10).unwrap() as i64;
+                    if seen_decimal {
+                        scale += 1;
+                    }
+                },
+                '.' => seen_decimal = true,
+                _ => return Err(ParseDecimalError { kind: DecimalErrorKind::InvalidDigit })
+            }
+        }
+        Ok(Decimal::new(unscaled * signum, scale))
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ParseDecimalError { kind: DecimalErrorKind }
+
+#[derive(Debug, Clone, PartialEq)]
+enum DecimalErrorKind {
+    InvalidDigit,
 }
 
 impl fmt::Display for Decimal {
@@ -120,7 +153,7 @@ fn upscale(n: i64, up_by: u32) -> i64 {
 
 #[cfg(test)]
 mod tests {
-    use super::Decimal;
+    use super::{Decimal, ParseDecimalError, DecimalErrorKind};
 
     #[test]
     fn equality() {
@@ -137,6 +170,18 @@ mod tests {
         assert_eq!(Decimal::new(100, 2), Decimal::new(1000, 3).set_scale(2));
         assert_eq!(Decimal::new(100, 2), Decimal::new(10, 1).set_scale(2));
         assert_eq!(Decimal::new(12, 1), Decimal::new(125, 2).set_scale(1));
+    }
+    #[test]
+    fn parse_from_str() {
+        assert_eq!(Ok(Decimal::new(1, 0)), "1".parse());
+        assert_eq!(Ok(Decimal::new(100, 2)), "1.00".parse());
+        assert_eq!(Ok(Decimal::new(23, 3)), "0.023".parse());
+        assert_eq!(Ok(Decimal::new(-125, 2)), "-1.25".parse());
+    }
+    #[test]
+    fn parse_failures() {
+        assert_eq!(Err(ParseDecimalError { kind: DecimalErrorKind::InvalidDigit }),
+                   "2g".parse::<Decimal>());
     }
     #[test]
     fn adding_decimals_with_different_scales_results_in_larger_scale() {
