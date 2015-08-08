@@ -14,12 +14,26 @@ impl Decimal {
         Decimal { unscaled: unscaled, scale: scale }
     }
 
-    pub fn set_scale(self, scale: u32) -> Decimal {
+    pub fn set_scale(&self, scale: u32) -> Decimal {
         match self.scale.cmp(&scale) {
-            Ordering::Equal => self,
-            Ordering::Greater => Decimal::new(downscale(self.unscaled, self.scale - scale), scale),
-            Ordering::Less => Decimal::new(upscale(self.unscaled, scale - self.scale), scale)
+            Ordering::Equal => self.clone(),
+            Ordering::Greater => Decimal::new(downscale(&self.unscaled, self.scale - scale), scale),
+            Ordering::Less => Decimal::new(upscale(&self.unscaled, scale - self.scale), scale)
         }
+    }
+}
+
+/// `Decimal` is only `PartialOrd`, not `Ord`, because its ordering is not antisymmetric,
+/// i.e., two decimals may compare `Ordering::Equal` but not be `==` to one another.
+/// However note that all `Decimal`s are comparable, so `partial_cmp` will never return
+/// `None`.
+impl PartialOrd for Decimal {
+    fn partial_cmp(&self, other: &Decimal) -> Option<Ordering> {
+        Some(match self.scale.cmp(&other.scale) {
+            Ordering::Equal => self.unscaled.cmp(&other.unscaled),
+            Ordering::Greater => self.unscaled.cmp(&upscale(&other.unscaled, self.scale - other.scale)),
+            Ordering::Less => upscale(&self.unscaled, other.scale - self.scale).cmp(&other.unscaled)
+        })
     }
 }
 
@@ -158,16 +172,16 @@ impl ops::Rem for Decimal {
     }
 }
 
-fn downscale(n: i64, down_by: u32) -> i64 {
-    let mut result = n;
+fn downscale(n: &i64, down_by: u32) -> i64 {
+    let mut result = n.clone();
     for _ in 0..down_by {
         result = result / 10;
     }
     result
 }
 
-fn upscale(n: i64, up_by: u32) -> i64 {
-    let mut result = n;
+fn upscale(n: &i64, up_by: u32) -> i64 {
+    let mut result = n.clone();
     for _ in 0..up_by {
         result = result * 10;
     }
@@ -184,6 +198,13 @@ mod tests {
         assert!(Decimal::new(1, 0) != Decimal::new(1, 1));
         assert!(Decimal::new(1, 0) != Decimal::new(10, 1));
         assert!(Decimal::new(1, 0) != Decimal::new(2, 0));
+    }
+    #[test]
+    fn numeric_comparison() {
+        assert!(Decimal::new(1, 0) < Decimal::new(2, 0));
+        assert!(Decimal::new(1, 0) > Decimal::new(2, 1));
+        assert_eq!(::std::cmp::Ordering::Equal,
+                   Decimal::new(1, 0).partial_cmp(&Decimal::new(10, 1)).unwrap());
     }
     #[test]
     fn set_scale_upwards_pads_with_zeros() {
