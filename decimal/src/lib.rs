@@ -176,9 +176,17 @@ mod tests {
     #[test]
     fn parse_from_str() {
         assert_eq!(Ok(Decimal::new(1, 0)), "1".parse());
+        assert_eq!(Ok(Decimal::new(1, 0)), "1.".parse());
+        assert_eq!(Ok(Decimal::new(1, 2)), "0.01".parse());
+        assert_eq!(Ok(Decimal::new(1, 2)), ".01".parse());
         assert_eq!(Ok(Decimal::new(100, 2)), "1.00".parse());
         assert_eq!(Ok(Decimal::new(23, 3)), "0.023".parse());
         assert_eq!(Ok(Decimal::new(-125, 2)), "-1.25".parse());
+        assert_eq!(Ok(Decimal::new(0, 0)), "000".parse());
+        assert_eq!(Ok(Decimal::new(0, 0)), "0.".parse());
+        assert_eq!(Ok(Decimal::new(0, 0)), "-".parse()); // error?
+        assert_eq!(Ok(Decimal::new(0, 0)), ".".parse()); // error?
+        assert_eq!(Ok(Decimal::new(0, 0)), "-.".parse()); // error?
     }
     #[test]
     fn parse_failures() {
