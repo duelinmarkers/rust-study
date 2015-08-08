@@ -181,21 +181,28 @@ mod tests {
     #[test]
     fn equality() {
         assert!(Decimal::new(1, 0) == Decimal::new(1, 0));
-        assert!(Decimal::new(1, 0) != Decimal::new(2, 0));
+        assert!(Decimal::new(1, 0) != Decimal::new(1, 1));
         assert!(Decimal::new(1, 0) != Decimal::new(10, 1));
+        assert!(Decimal::new(1, 0) != Decimal::new(2, 0));
     }
     #[test]
-    fn add_decimals_with_same_scale() {
-        assert_eq!(Decimal::new(100, 2), Decimal::new(51, 2) + Decimal::new(49, 2));
-    }
-    #[test]
-    fn set_scale() {
-        assert_eq!(Decimal::new(100, 2), Decimal::new(1000, 3).set_scale(2));
+    fn set_scale_upwards_pads_with_zeros() {
+        assert_eq!(Decimal::new(100, 2), Decimal::new(1, 0).set_scale(2));
         assert_eq!(Decimal::new(100, 2), Decimal::new(10, 1).set_scale(2));
+    }
+    #[test]
+    fn set_scale_downwards_truncates() {
+        assert_eq!(Decimal::new(100, 2), Decimal::new(1000, 3).set_scale(2));
         assert_eq!(Decimal::new(12, 1), Decimal::new(125, 2).set_scale(1));
     }
     #[test]
+    #[should_panic(expected = "arithmetic operation overflowed")]
+    fn set_scale_to_overflow_unscaled_value_panics() {
+        Decimal::new(::std::i64::MAX, 3).set_scale(4);
+    }
+    #[test]
     fn parse_from_str() {
+        assert_eq!(Ok(Decimal::new(1, 0)), ::std::str::FromStr::from_str("1"));
         assert_eq!(Ok(Decimal::new(1, 0)), "1".parse());
         assert_eq!(Ok(Decimal::new(1, 0)), "1.".parse());
         assert_eq!(Ok(Decimal::new(1, 2)), "0.01".parse());
@@ -220,12 +227,26 @@ mod tests {
                    "".parse::<Decimal>().err().unwrap().description());
     }
     #[test]
+    fn adding_decimals_with_same_scale_maintains_scale() {
+        assert_eq!(Decimal::new(100, 2), Decimal::new(51, 2) + Decimal::new(49, 2));
+    }
+    #[test]
     fn adding_decimals_with_different_scales_results_in_larger_scale() {
         assert_eq!(Decimal::new(100, 2), Decimal::new(9, 1) + Decimal::new(10, 2));
     }
     #[test]
+    #[should_panic(expected = "arithmetic operation overflowed")]
+    fn adding_to_overflow_unscaled_value_panics() {
+        Decimal::new(::std::i64::MAX, 0) + Decimal::new(1, 0);
+    }
+    #[test]
     fn subtracting_decimals_with_different_scales_results_in_larger_scale() {
         assert_eq!(Decimal::new(100, 2), Decimal::new(11, 1) - Decimal::new(10, 2));
+    }
+    #[test]
+    #[should_panic(expected = "arithmetic operation overflowed")]
+    fn subtracting_to_overflow_unscaled_value_panics() {
+        Decimal::new(::std::i64::MIN, 0) - Decimal::new(1, 0);
     }
     #[test]
     fn multiplying_decimals_results_in_summed_scales() {
@@ -237,6 +258,16 @@ mod tests {
     fn multiplying_decimal_by_int_is_commutative() {
         assert_eq!(Decimal::new(246, 2), Decimal::new(123, 2) * 2);
         assert_eq!(Decimal::new(246, 2), 2 * Decimal::new(123, 2));
+    }
+    #[test]
+    #[should_panic(expected = "arithmetic operation overflowed")]
+    fn multiplying_to_overflow_unscaled_value_panics() {
+        Decimal::new(::std::i64::MAX, 2) * Decimal::new(10001, 4);
+    }
+    #[test]
+    #[should_panic(expected = "arithmetic operation overflowed")]
+    fn multiplying_to_overflow_scale_panics() {
+        Decimal::new(1, ::std::u32::MAX) * Decimal::new(1, 1);
     }
     #[test]
     fn dividing_decimal_by_decimal() {
@@ -273,9 +304,10 @@ mod tests {
                    buck_fifty);
     }
     #[test]
-    fn displays_with_decimal_point() {
+    fn displays_with_decimal_point_and_optional_negative_sign() {
         assert_eq!("1.50", format!("{}", Decimal::new(150, 2)));
         assert_eq!("0.0010", format!("{}", Decimal::new(10, 4)));
+        assert_eq!("-0.1", format!("{}", Decimal::new(-1, 1)));
     }
     #[test]
     fn supports_debug_format() {
