@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::str;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Decimal {
     unscaled: i64,
     scale: u32
@@ -67,12 +67,6 @@ impl fmt::Display for Decimal {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         write!(fmt, "{:.*}", self.scale as usize,
                (self.unscaled as f64) / (10i64.pow(self.scale) as f64))
-    }
-}
-
-impl PartialEq for Decimal {
-    fn eq(&self, other: &Decimal) -> bool {
-        self.unscaled == other.unscaled && self.scale == other.scale
     }
 }
 
