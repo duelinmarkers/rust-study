@@ -3,10 +3,12 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::str;
 
+/// A simple decimal number type consisting of an unscaled `i64` and a `u32` scale
+/// (number of places to the right of the decimal point).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Decimal {
-    unscaled: i64,
-    scale: u32
+    pub unscaled: i64,
+    pub scale: u32
 }
 
 impl Decimal {
