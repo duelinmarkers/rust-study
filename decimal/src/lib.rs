@@ -14,11 +14,12 @@ impl Decimal {
         Decimal { unscaled: unscaled, scale: scale }
     }
 
-    pub fn set_scale(&self, scale: u32) -> Decimal {
-        match self.scale.cmp(&scale) {
+    /// Add or truncate places to the right of the decimal.
+    pub fn adjust_scale(&self, new_scale: u32) -> Decimal {
+        match self.scale.cmp(&new_scale) {
             Ordering::Equal => self.clone(),
-            Ordering::Greater => Decimal::new(downscale(&self.unscaled, self.scale - scale), scale),
-            Ordering::Less => Decimal::new(upscale(&self.unscaled, scale - self.scale), scale)
+            Ordering::Greater => Decimal::new(downscale(&self.unscaled, self.scale - new_scale), new_scale),
+            Ordering::Less => Decimal::new(upscale(&self.unscaled, new_scale - self.scale), new_scale)
         }
     }
 }
@@ -110,8 +111,8 @@ impl ops::Add for Decimal {
     fn add(self, other: Decimal) -> Decimal {
         match self.scale.cmp(&other.scale) {
             Ordering::Equal => Decimal::new(self.unscaled + other.unscaled, self.scale),
-            Ordering::Less => self.set_scale(other.scale) + other,
-            Ordering::Greater => self + other.set_scale(self.scale)
+            Ordering::Less => self.adjust_scale(other.scale) + other,
+            Ordering::Greater => self + other.adjust_scale(self.scale)
         }
     }
 }
@@ -121,8 +122,8 @@ impl ops::Sub for Decimal {
     fn sub(self, other: Decimal) -> Decimal {
         match self.scale.cmp(&other.scale) {
             Ordering::Equal => Decimal::new(self.unscaled - other.unscaled, self.scale),
-            Ordering::Less => self.set_scale(other.scale) - other,
-            Ordering::Greater => self - other.set_scale(self.scale)
+            Ordering::Less => self.adjust_scale(other.scale) - other,
+            Ordering::Greater => self - other.adjust_scale(self.scale)
         }
     }
 }
@@ -152,7 +153,7 @@ impl ops::Div for Decimal {
     type Output = Decimal;
     fn div(self, other: Decimal) -> Decimal {
         let s = if other.scale > self.scale {
-            self.set_scale(other.scale)
+            self.adjust_scale(other.scale)
         } else {
             self
         };
@@ -164,7 +165,7 @@ impl ops::Rem for Decimal {
     type Output = Decimal;
     fn rem(self, other: Decimal) -> Decimal {
         let s = if other.scale > self.scale {
-            self.set_scale(other.scale)
+            self.adjust_scale(other.scale)
         } else {
             self
         };
@@ -207,19 +208,19 @@ mod tests {
                    Decimal::new(1, 0).partial_cmp(&Decimal::new(10, 1)).unwrap());
     }
     #[test]
-    fn set_scale_upwards_pads_with_zeros() {
-        assert_eq!(Decimal::new(100, 2), Decimal::new(1, 0).set_scale(2));
-        assert_eq!(Decimal::new(100, 2), Decimal::new(10, 1).set_scale(2));
+    fn adjust_scale_upwards_pads_with_zeros() {
+        assert_eq!(Decimal::new(100, 2), Decimal::new(1, 0).adjust_scale(2));
+        assert_eq!(Decimal::new(100, 2), Decimal::new(10, 1).adjust_scale(2));
     }
     #[test]
-    fn set_scale_downwards_truncates() {
-        assert_eq!(Decimal::new(100, 2), Decimal::new(1000, 3).set_scale(2));
-        assert_eq!(Decimal::new(12, 1), Decimal::new(125, 2).set_scale(1));
+    fn adjust_scale_downwards_truncates() {
+        assert_eq!(Decimal::new(100, 2), Decimal::new(1000, 3).adjust_scale(2));
+        assert_eq!(Decimal::new(12, 1), Decimal::new(125, 2).adjust_scale(1));
     }
     #[test]
     #[should_panic(expected = "arithmetic operation overflowed")]
-    fn set_scale_to_overflow_unscaled_value_panics() {
-        Decimal::new(::std::i64::MAX, 3).set_scale(4);
+    fn adjust_scale_to_overflow_unscaled_value_panics() {
+        Decimal::new(::std::i64::MAX, 3).adjust_scale(4);
     }
     #[test]
     fn parse_from_str() {
@@ -314,7 +315,7 @@ mod tests {
     }
     #[test]
     fn performing_ops_on_decimals_does_not_preclude_further_use() {
-        let fifty_cents = Decimal::new(5, 1).set_scale(2);
+        let fifty_cents = Decimal::new(5, 1).adjust_scale(2);
         let buck_fifty = Decimal::new(150, 2);
         let two_dollars = Decimal::new(200, 2);
         assert_eq!(buck_fifty + fifty_cents,
