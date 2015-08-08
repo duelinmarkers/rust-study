@@ -57,6 +57,27 @@ impl str::FromStr for Decimal {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ParseDecimalError { kind: DecimalErrorKind }
 
+impl ParseDecimalError {
+    fn __description(&self) -> &str {
+        match self.kind {
+            DecimalErrorKind::Empty => "cannot parse decimal from empty string",
+            DecimalErrorKind::InvalidDigit => "invalid character found in string"
+        }
+    }
+}
+
+impl fmt::Display for ParseDecimalError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.__description().fmt(f)
+    }
+}
+
+impl std::error::Error for ParseDecimalError {
+    fn description(&self) -> &str {
+        self.__description()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 enum DecimalErrorKind {
     Empty,
@@ -155,7 +176,7 @@ fn upscale(n: i64, up_by: u32) -> i64 {
 
 #[cfg(test)]
 mod tests {
-    use super::{Decimal, ParseDecimalError, DecimalErrorKind};
+    use super::Decimal;
 
     #[test]
     fn equality() {
@@ -190,12 +211,13 @@ mod tests {
     }
     #[test]
     fn parse_failures() {
-        assert_eq!(Err(ParseDecimalError { kind: DecimalErrorKind::InvalidDigit }),
-                   "2g".parse::<Decimal>());
-        assert_eq!(Err(ParseDecimalError { kind: DecimalErrorKind::InvalidDigit }),
-                   "2-2".parse::<Decimal>());
-        assert_eq!(Err(ParseDecimalError { kind: DecimalErrorKind::Empty }),
-                   "".parse::<Decimal>());
+        use std::error::Error;
+        assert_eq!("invalid character found in string",
+                   "2g".parse::<Decimal>().err().unwrap().description());
+        assert_eq!("invalid character found in string",
+                   "2-2".parse::<Decimal>().err().unwrap().description());
+        assert_eq!("cannot parse decimal from empty string",
+                   "".parse::<Decimal>().err().unwrap().description());
     }
     #[test]
     fn adding_decimals_with_different_scales_results_in_larger_scale() {
