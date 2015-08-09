@@ -11,12 +11,12 @@ use std::str;
 /// ```rust
 /// use decimal::Decimal;
 ///
-/// let three_fifty: Decimal = "3.50".parse().unwrap();
-/// let two = Decimal::new(2, 0);
+/// let three_fifty: Decimal = "3.50".parse().unwrap(); // created via FromStr
+/// let two = Decimal::new(2, 0); // created directly
 ///
-/// assert_eq!(three_fifty * two, Decimal::new(700, 2));
-/// assert_eq!(three_fifty + two, Decimal::new(550, 2));
-/// assert_eq!(three_fifty / two, Decimal::new(175, 2));
+/// assert_eq!(format!("{}", three_fifty * two), "7.00");
+/// assert_eq!(format!("{}", three_fifty + two), "5.50");
+/// assert_eq!(format!("{}", three_fifty / two), "1.75");
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Decimal {
@@ -53,6 +53,22 @@ impl PartialOrd for Decimal {
     }
 }
 
+/// # Examples
+///
+/// Using `FromStr` directly:
+///
+/// ```rust
+/// use decimal::Decimal;
+/// use std::str::FromStr;
+/// assert_eq!(Decimal::new(12345, 3), FromStr::from_str("12.345").unwrap());
+/// ```
+///
+/// Using `&str.parse()`:
+///
+/// ```rust
+/// use decimal::Decimal;
+/// assert_eq!(Decimal::new(-100, 2), "-1.00".parse().unwrap());
+/// ```
 impl str::FromStr for Decimal {
     type Err = ParseDecimalError;
     fn from_str(s: &str) -> Result<Decimal, ParseDecimalError> {
@@ -157,6 +173,8 @@ impl ops::Mul<i64> for Decimal {
     }
 }
 
+/// I wasn't sure I could do this, but I can.
+/// Apparently it won't be documented though.
 impl ops::Mul<Decimal> for i64 {
     type Output = Decimal;
     fn mul(self, d: Decimal) -> Decimal {
