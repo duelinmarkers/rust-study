@@ -2,3 +2,7 @@
 name = "decimal"
 version = "0.1.0"
 authors = ["John Hume <duelin.markers@gmail.com>"]
+
+[dev-dependencies]
+quickcheck = "*"
+quickcheck_macros = "*"

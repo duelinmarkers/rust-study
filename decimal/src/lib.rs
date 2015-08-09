@@ -132,8 +132,28 @@ enum DecimalErrorKind {
 
 impl fmt::Display for Decimal {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "{:.*}", self.scale as usize,
-               (self.unscaled as f64) / (10i64.pow(self.scale) as f64))
+        use std::fmt::Write;
+        if self.scale == 0 {
+            try!(write!(fmt, "{}", self.unscaled));
+            return Ok(());
+        }
+        let mut unscaled_str = format!("{}", self.unscaled);
+        if self.unscaled.is_negative() {
+            let _ = unscaled_str.remove(0);
+            try!(fmt.write_char('-'));
+        }
+        let unscaled_len = unscaled_str.len() as u32; // assume all chars are 1-byte.
+        if self.scale >= unscaled_len {
+            try!(fmt.write_char('0'));
+            try!(fmt.write_char('.'));
+            for _ in 0..(self.scale - unscaled_len) {
+                try!(fmt.write_char('0'));
+            }
+        } else {
+            unscaled_str.insert((unscaled_len - self.scale) as usize, '.');
+        }
+        try!(fmt.write_str(&*unscaled_str));
+        Ok(())
     }
 }
 
@@ -202,7 +222,7 @@ impl ops::Rem for Decimal {
         } else {
             self
         };
-        Decimal::new(s.unscaled % other.unscaled, s.scale - other.scale)
+        Decimal::new(s.unscaled % other.unscaled, s.scale)
     }
 }
 
