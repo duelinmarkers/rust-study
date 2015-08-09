@@ -4,7 +4,20 @@ use std::fmt;
 use std::str;
 
 /// A simple decimal number type consisting of an unscaled `i64` and a `u32` scale
-/// (number of places to the right of the decimal point).
+/// (number of places to the right of the decimal point). Math operators are supported.
+///
+/// # Examples
+///
+/// ```rust
+/// use decimal::Decimal;
+///
+/// let three_fifty: Decimal = "3.50".parse().unwrap();
+/// let two = Decimal::new(2, 0);
+///
+/// assert_eq!(three_fifty * two, Decimal::new(700, 2));
+/// assert_eq!(three_fifty + two, Decimal::new(550, 2));
+/// assert_eq!(three_fifty / two, Decimal::new(175, 2));
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Decimal {
     pub unscaled: i64,
@@ -12,7 +25,7 @@ pub struct Decimal {
 }
 
 impl Decimal {
-    fn new(unscaled: i64, scale: u32) -> Decimal {
+    pub fn new(unscaled: i64, scale: u32) -> Decimal {
         Decimal { unscaled: unscaled, scale: scale }
     }
 
