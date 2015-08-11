@@ -43,6 +43,19 @@ impl Decimal {
 /// i.e., two decimals may compare `Ordering::Equal` but not be `==` to one another.
 /// However note that all `Decimal`s are comparable, so `partial_cmp` will never return
 /// `None`.
+///
+/// # Examples
+///
+/// ```
+/// use decimal::Decimal;
+/// let one = Decimal::new(1, 0);
+/// let two = Decimal::new(2, 0);
+/// assert!(one < two);
+/// let two_tenths = Decimal::new(2, 1);
+/// assert!(one > two_tenths);
+/// let one_point_oh = Decimal::new(10, 1);
+/// assert_eq!(one.partial_cmp(&one_point_oh), Some(::std::cmp::Ordering::Equal));
+/// ```
 impl PartialOrd for Decimal {
     fn partial_cmp(&self, other: &Decimal) -> Option<Ordering> {
         Some(match self.scale.cmp(&other.scale) {
@@ -252,13 +265,6 @@ mod tests {
         assert!(Decimal::new(1, 0) != Decimal::new(1, 1));
         assert!(Decimal::new(1, 0) != Decimal::new(10, 1));
         assert!(Decimal::new(1, 0) != Decimal::new(2, 0));
-    }
-    #[test]
-    fn numeric_comparison() {
-        assert!(Decimal::new(1, 0) < Decimal::new(2, 0));
-        assert!(Decimal::new(1, 0) > Decimal::new(2, 1));
-        assert_eq!(::std::cmp::Ordering::Equal,
-                   Decimal::new(1, 0).partial_cmp(&Decimal::new(10, 1)).unwrap());
     }
     #[test]
     fn adjust_scale_upwards_pads_with_zeros() {
