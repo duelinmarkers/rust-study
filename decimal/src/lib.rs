@@ -8,9 +8,8 @@ use std::str;
 ///
 /// # Examples
 ///
-/// ```rust
-/// use decimal::Decimal;
-///
+/// ```
+/// # use decimal::Decimal;
 /// let three_fifty: Decimal = "3.50".parse().unwrap(); // created via FromStr
 /// let two = Decimal::new(2, 0); // created directly
 ///
@@ -47,7 +46,7 @@ impl Decimal {
 /// # Examples
 ///
 /// ```
-/// use decimal::Decimal;
+/// # use decimal::Decimal;
 /// let one = Decimal::new(1, 0);
 /// let two = Decimal::new(2, 0);
 /// assert!(one < two);
@@ -70,16 +69,16 @@ impl PartialOrd for Decimal {
 ///
 /// Using `FromStr` directly:
 ///
-/// ```rust
-/// use decimal::Decimal;
+/// ```
+/// # use decimal::Decimal;
 /// use std::str::FromStr;
 /// assert_eq!(Decimal::new(12345, 3), FromStr::from_str("12.345").unwrap());
 /// ```
 ///
 /// Using `&str.parse()`:
 ///
-/// ```rust
-/// use decimal::Decimal;
+/// ```
+/// # use decimal::Decimal;
 /// assert_eq!(Decimal::new(-100, 2), "-1.00".parse().unwrap());
 /// ```
 impl str::FromStr for Decimal {
