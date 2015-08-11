@@ -29,6 +29,15 @@ impl Decimal {
     }
 
     /// Add or truncate places to the right of the decimal.
+    ///
+    /// # Examples
+    /// ```
+    /// # use decimal::Decimal;
+    /// assert_eq!(Decimal::new(1, 0).adjust_scale(2), Decimal::new(100, 2));
+    /// assert_eq!(Decimal::new(10, 1).adjust_scale(2), Decimal::new(100, 2));
+    /// assert_eq!(Decimal::new(1000, 3).adjust_scale(2), Decimal::new(100, 2));
+    /// assert_eq!(Decimal::new(125, 2).adjust_scale(1), Decimal::new(12, 1));
+    /// ```
     pub fn adjust_scale(&self, new_scale: u32) -> Decimal {
         match self.scale.cmp(&new_scale) {
             Ordering::Equal => self.clone(),
@@ -264,16 +273,6 @@ mod tests {
         assert!(Decimal::new(1, 0) != Decimal::new(1, 1));
         assert!(Decimal::new(1, 0) != Decimal::new(10, 1));
         assert!(Decimal::new(1, 0) != Decimal::new(2, 0));
-    }
-    #[test]
-    fn adjust_scale_upwards_pads_with_zeros() {
-        assert_eq!(Decimal::new(100, 2), Decimal::new(1, 0).adjust_scale(2));
-        assert_eq!(Decimal::new(100, 2), Decimal::new(10, 1).adjust_scale(2));
-    }
-    #[test]
-    fn adjust_scale_downwards_truncates() {
-        assert_eq!(Decimal::new(100, 2), Decimal::new(1000, 3).adjust_scale(2));
-        assert_eq!(Decimal::new(12, 1), Decimal::new(125, 2).adjust_scale(1));
     }
     #[test]
     #[should_panic(expected = "arithmetic operation overflowed")]
