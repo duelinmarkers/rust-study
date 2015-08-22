@@ -42,7 +42,7 @@ use std::str;
 /// assert_eq!(format!("{}", three_fifty + two), "5.50");
 /// assert_eq!(format!("{}", three_fifty / two), "1.75");
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Decimal {
     pub unscaled: i64,
     pub scale: u32
@@ -415,5 +415,16 @@ mod tests {
     fn supports_debug_format() {
         assert_eq!("Decimal { unscaled: 1, scale: 2 }",
                    format!("{:?}", Decimal::new(1, 2)));
+    }
+    #[test]
+    fn can_be_used_in_hashing_data_structures() {
+        use std::collections::HashSet;
+        let mut nums = HashSet::new();
+        nums.insert(Decimal::new(10, 1));
+        nums.insert(Decimal::new(100, 2));
+        assert!(nums.contains(&"1.0".parse().unwrap()));
+        assert!(nums.contains(&"1.00".parse().unwrap()));
+        assert!(!nums.contains(&"1.000".parse().unwrap()));
+        assert!(!nums.contains(&"2.0".parse().unwrap()));
     }
 }
