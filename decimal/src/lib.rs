@@ -132,12 +132,12 @@ impl str::FromStr for Decimal {
                         scale += 1;
                     }
                 },
-                _ => return Err(ParseDecimalError { kind: InvalidDigit })
+                c => return Err(ParseDecimalError::new(InvalidChar(c, index)))
             }
             index += 1;
         }
         if index == 0 {
-            Err(ParseDecimalError { kind: Empty })
+            Err(ParseDecimalError::new(Empty))
         } else {
             Ok(Decimal::new(if negative { -unscaled } else { unscaled }, scale))
         }
@@ -145,33 +145,47 @@ impl str::FromStr for Decimal {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ParseDecimalError { kind: DecimalErrorKind }
+pub struct ParseDecimalError {
+    kind: DecimalErrorKind,
+    desc: String,
+}
 
 impl ParseDecimalError {
-    fn __description(&self) -> &str {
-        match self.kind {
-            DecimalErrorKind::Empty => "cannot parse decimal from empty string",
-            DecimalErrorKind::InvalidDigit => "invalid character found in string"
-        }
+    fn new(kind: DecimalErrorKind) -> Self {
+        let desc = kind.desc();
+        ParseDecimalError { kind: kind, desc: desc }
     }
 }
 
 impl fmt::Display for ParseDecimalError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.__description().fmt(f)
+        self.desc.fmt(f)
     }
 }
 
 impl std::error::Error for ParseDecimalError {
     fn description(&self) -> &str {
-        self.__description()
+        &self.desc
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 enum DecimalErrorKind {
     Empty,
-    InvalidDigit,
+    InvalidChar(char, u32),
+}
+
+impl DecimalErrorKind {
+    fn desc(&self) -> String {
+        match *self {
+            DecimalErrorKind::Empty =>
+                "cannot parse decimal from empty string".to_string(),
+            DecimalErrorKind::InvalidChar(c, i) => {
+                format!("invalid character '{}' found at index {}", c, i)
+            }
+        }
+
+    }
 }
 
 impl fmt::Display for Decimal {
@@ -321,9 +335,9 @@ mod tests {
     #[test]
     fn parse_failures() {
         use std::error::Error;
-        assert_eq!("invalid character found in string",
+        assert_eq!("invalid character 'g' found at index 1",
                    "2g".parse::<Decimal>().err().unwrap().description());
-        assert_eq!("invalid character found in string",
+        assert_eq!("invalid character '-' found at index 1",
                    "2-2".parse::<Decimal>().err().unwrap().description());
         assert_eq!("cannot parse decimal from empty string",
                    "".parse::<Decimal>().err().unwrap().description());
