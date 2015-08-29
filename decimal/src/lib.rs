@@ -1,6 +1,7 @@
 //! This crate exists for my personal learning purposes only and is not intended for
 //! production use. Look how little code it took! If you need a number sort of like
-//! this one, go for it!
+//! this one, I'd recommend creating your own, maybe with stronger type constraints
+//! to make it work particularly well for your domain.
 //!
 //! This code is released under an MIT-style license.
 
@@ -144,50 +145,6 @@ impl str::FromStr for Decimal {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct ParseDecimalError {
-    kind: DecimalErrorKind,
-    desc: String,
-}
-
-impl ParseDecimalError {
-    fn new(kind: DecimalErrorKind) -> Self {
-        let desc = kind.desc();
-        ParseDecimalError { kind: kind, desc: desc }
-    }
-}
-
-impl fmt::Display for ParseDecimalError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.desc.fmt(f)
-    }
-}
-
-impl std::error::Error for ParseDecimalError {
-    fn description(&self) -> &str {
-        &self.desc
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-enum DecimalErrorKind {
-    Empty,
-    InvalidChar(char, u32),
-}
-
-impl DecimalErrorKind {
-    fn desc(&self) -> String {
-        match *self {
-            DecimalErrorKind::Empty =>
-                "cannot parse decimal from empty string".to_string(),
-            DecimalErrorKind::InvalidChar(c, i) => {
-                format!("invalid character '{}' found at index {}", c, i)
-            }
-        }
-
-    }
-}
-
 impl fmt::Display for Decimal {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         use std::fmt::Write;
@@ -298,6 +255,50 @@ fn upscale(n: &i64, up_by: u32) -> i64 {
         result = result * 10;
     }
     result
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ParseDecimalError {
+    kind: DecimalErrorKind,
+    desc: String,
+}
+
+impl ParseDecimalError {
+    fn new(kind: DecimalErrorKind) -> Self {
+        let desc = kind.desc();
+        ParseDecimalError { kind: kind, desc: desc }
+    }
+}
+
+impl fmt::Display for ParseDecimalError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.desc.fmt(f)
+    }
+}
+
+impl std::error::Error for ParseDecimalError {
+    fn description(&self) -> &str {
+        &self.desc
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum DecimalErrorKind {
+    Empty,
+    InvalidChar(char, u32),
+}
+
+impl DecimalErrorKind {
+    fn desc(&self) -> String {
+        match *self {
+            DecimalErrorKind::Empty =>
+                "cannot parse decimal from empty string".to_string(),
+            DecimalErrorKind::InvalidChar(c, i) => {
+                format!("invalid character '{}' found at index {}", c, i)
+            }
+        }
+
+    }
 }
 
 #[cfg(test)]

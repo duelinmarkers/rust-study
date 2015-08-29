@@ -3,7 +3,8 @@ A Rust Decimal Type
 
 This crate exists for my personal learning purposes only and is not intended for
 production use. Look how little code it took! If you need a number sort of like
-this one, go for it!
+this one, I'd recommend creating your own, maybe with stronger type constraints
+to make it work particularly well for your domain.
 
 ---
 
