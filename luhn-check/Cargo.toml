@@ -1,0 +1,4 @@
+[package]
+name = "luhn-check"
+version = "0.1.0"
+authors = ["John Hume <duelin.markers@gmail.com>"]
