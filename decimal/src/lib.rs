@@ -36,8 +36,8 @@ use std::str;
 /// # Examples
 /// ```
 /// # use decimal::Decimal;
-/// let three_fifty: Decimal = "3.50".parse().unwrap(); // created via FromStr
-/// let two = Decimal::new(2, 0); // created directly
+/// let three_fifty = Decimal::new(350, 2); // created directly
+/// let two: Decimal = "2".parse().unwrap(); // created via FromStr
 ///
 /// assert_eq!(format!("{}", three_fifty * two), "7.00");
 /// assert_eq!(format!("{}", three_fifty + two), "5.50");
@@ -74,9 +74,9 @@ impl Decimal {
 }
 
 /// `Decimal` is only `PartialOrd`, not `Ord`, because its ordering is not antisymmetric,
-/// i.e., two decimals may compare `Ordering::Equal` but not be `==` to one another.
-/// However note that all `Decimal`s are comparable, so `partial_cmp` will never return
-/// `None`.
+/// i.e., two decimals may compare `Ordering::Equal` but not be `==` to one another due
+/// to differing scales. However note that all `Decimal`s are comparable, so
+/// `partial_cmp` will never return `None`.
 ///
 /// # Examples
 /// ```
@@ -87,7 +87,7 @@ impl Decimal {
 /// let two_tenths = Decimal::new(2, 1);
 /// assert!(one > two_tenths);
 /// let one_point_oh = Decimal::new(10, 1);
-/// assert_eq!(one.partial_cmp(&one_point_oh), Some(::std::cmp::Ordering::Equal));
+/// assert_eq!(::std::cmp::Ordering::Equal, one.partial_cmp(&one_point_oh).unwrap());
 /// ```
 impl PartialOrd for Decimal {
     fn partial_cmp(&self, other: &Decimal) -> Option<Ordering> {
