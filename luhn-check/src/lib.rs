@@ -1,4 +1,7 @@
+//! An implementation of the [Luhn algorithm](https://en.wikipedia.org/wiki/Luhn_algorithm)
+//! for validating credit card numbers and assorted other things.
 
+/// Provides the check digit to be appended to `s` to create a valid luhn-checkable value.
 pub fn calculate_check_digit(s: &str) -> Option<u32> {
     if let Some(sum) = (0..).zip(s.chars().rev()).fold(Some(0), |result, (index, c)| {
         match result {
@@ -19,10 +22,24 @@ pub fn calculate_check_digit(s: &str) -> Option<u32> {
     }
 }
 
+/// Performs the checksum on `s`.
+// pub fn valid_str(s: &str) -> bool {
+//     match s.chars().last() {
+//         None => false,
+//         Some(last_char) => match last_char.to_digit(10) {
+//             None => false,
+//             some_digit => some_digit == calculate_check_digit(butlast(1, s))
+//         }
+//     }
+// }
+
 pub fn valid_str(s: &str) -> bool {
-    let check_digit = calculate_check_digit(&s[..(s.len() - 1)]);
-    !s.is_empty()
-        && s.chars().last().unwrap().to_digit(10) == check_digit
+    s.chars().last()
+        .and_then(|last_char| { last_char.to_digit(10) })
+        .map_or(false, |digit| {
+            calculate_check_digit(butlast(1, s))
+                .map_or(false, |real_digit| { digit == real_digit })
+        })
 }
 
 fn sum_digits(i: u32) -> u32 {
@@ -33,6 +50,10 @@ fn sum_digits(i: u32) -> u32 {
         i = i / 10;
     }
     result
+}
+
+fn butlast(n: usize, s: &str) -> &str {
+    &s[..(s.len() - n)]
 }
 
 #[cfg(test)]
@@ -50,9 +71,15 @@ mod tests {
         use super::super::valid_str;
 
         #[test]
-        fn validates_good_str() { assert!(valid_str("4012888888881881")); }
+        fn validates_good() { assert!(valid_str("4012888888881881")); }
         #[test]
-        fn invalidates_bad_str() { assert!(!valid_str("4012888888881882")); }
+        fn invalidates_bad() { assert!(!valid_str("4012888888881882")); }
+        #[test]
+        fn invalidates_non_numeric_check_digit() { assert!(!valid_str("401288888888188G")); }
+        #[test]
+        fn invalidates_non_numeric() { assert!(!valid_str("4012HI")); }
+        #[test]
+        fn invalidates_empty() { assert!(!valid_str("")); }
     }
 
     #[test]
