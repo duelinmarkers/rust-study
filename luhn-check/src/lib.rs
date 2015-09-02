@@ -3,23 +3,17 @@
 
 /// Provides the check digit to be appended to `s` to create a valid luhn-checkable value.
 pub fn calculate_check_digit(s: &str) -> Option<u32> {
-    if let Some(sum) = (0..).zip(s.chars().rev()).fold(Some(0), |result, (index, c)| {
-        match result {
-            None => None,
-            Some(sum) => match c.to_digit(10) {
-                None => None,
-                Some(d) => Some(sum + if (index % 2) == 0 {
+    (0..).zip(s.chars().rev()).fold(Some(0), |result, (index, c)| {
+        result.and_then(|sum| {
+            c.to_digit(10).map(|d| {
+                sum + if (index % 2) == 0 {
                     sum_digits(d * 2)
                 } else {
                     d
-                })
-            }
-        }
-    }) {
-        Some((10 - (sum % 10)))
-    } else {
-        None
-    }
+                }
+            })
+        })
+    }).map(|sum| { 10 - (sum % 10) })
 }
 
 /// Performs the checksum on `s`.
