@@ -1,9 +1,9 @@
 //! An implementation of the [Luhn algorithm](https://en.wikipedia.org/wiki/Luhn_algorithm)
 //! for validating credit card numbers and assorted other things.
 
-/// Provides the check digit to be appended to `s` to create a valid luhn-checkable value.
-pub fn calculate_check_digit(s: &str) -> Option<u32> {
-    (0..).zip(s.chars().rev()).fold(Some(0), |result, (index, c)| {
+/// Provides the check digit to be appended to `partial_num` to create a valid luhn-checkable value.
+pub fn calculate_check_digit(partial_num: &str) -> Option<u32> {
+    (0..).zip(partial_num.chars().rev()).fold(Some(0), |result, (index, c)| {
         result.and_then(|sum| {
             c.to_digit(10).map(|d| {
                 sum + if (index % 2) == 0 {
@@ -27,11 +27,11 @@ pub fn calculate_check_digit(s: &str) -> Option<u32> {
 //     }
 // }
 
-pub fn valid_str(s: &str) -> bool {
-    s.chars().last()
+pub fn valid_str(num: &str) -> bool {
+    num.chars().last()
         .and_then(|last_char| { last_char.to_digit(10) })
         .map_or(false, |digit| {
-            calculate_check_digit(butlast(1, s))
+            calculate_check_digit(butlast(1, num))
                 .map_or(false, |real_digit| { digit == real_digit })
         })
 }
