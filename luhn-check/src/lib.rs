@@ -1,7 +1,8 @@
 //! An implementation of the [Luhn algorithm](https://en.wikipedia.org/wiki/Luhn_algorithm)
-//! for validating credit card numbers and assorted other things.
+//! for validating "a variety of identification numbers, such as credit card numbers, IMEI numbers,
+//! National Provider Identifier numbers in the US, and Canadian Social Insurance Numbers."
 
-/// Provides the check digit to be appended to `partial_num` to create a valid luhn-checkable value.
+/// Provides the check-digit to be appended to `partial_num` to create a valid luhn-checkable value.
 pub fn calculate_check_digit(partial_num: &str) -> Option<u32> {
     if partial_num.is_empty() {
         return None;
@@ -19,7 +20,7 @@ pub fn calculate_check_digit(partial_num: &str) -> Option<u32> {
     }).map(|sum| { 10 - (sum % 10) })
 }
 
-/// Performs the checksum on `s`.
+/// Verifies that `num` satisfies the Luhn check.
 pub fn valid_str(num: &str) -> bool {
     num.chars().last()
         .and_then(|last_char| { last_char.to_digit(10) })
