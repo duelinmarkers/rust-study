@@ -3,6 +3,9 @@
 
 /// Provides the check digit to be appended to `partial_num` to create a valid luhn-checkable value.
 pub fn calculate_check_digit(partial_num: &str) -> Option<u32> {
+    if partial_num.is_empty() {
+        return None;
+    }
     (0..).zip(partial_num.chars().rev()).fold(Some(0), |result, (index, c)| {
         result.and_then(|sum| {
             c.to_digit(10).map(|d| {
@@ -56,18 +59,31 @@ mod tests {
         use super::super::calculate_check_digit;
 
         #[test]
-        fn calculates() { assert_eq!(1, calculate_check_digit("401288888888188").unwrap()); }
+        fn calculates_on_realistic_cc() {
+            assert_eq!(1, calculate_check_digit("401288888888188").unwrap());
+        }
         #[test]
-        fn yields_none_on_bad_input() { assert_eq!(None, calculate_check_digit("ffff")); }
+        fn calculates_for_super_simple_examples() {
+            assert_eq!(2, calculate_check_digit("4").unwrap());
+            assert_eq!(1, calculate_check_digit("14").unwrap());
+        }
+        #[test]
+        fn yields_none_on_non_numeric() {
+            assert_eq!(None, calculate_check_digit("ffff"));
+        }
+        #[test]
+        fn yields_none_on_empty() {
+            assert_eq!(None, calculate_check_digit(""));
+        }
     }
 
     mod valid_str {
         use super::super::valid_str;
 
         #[test]
-        fn validates_good() { assert!(valid_str("4012888888881881")); }
+        fn validates_good_cc() { assert!(valid_str("4012888888881881")); }
         #[test]
-        fn invalidates_bad() { assert!(!valid_str("4012888888881882")); }
+        fn invalidates_bad_cc() { assert!(!valid_str("4012888888881882")); }
         #[test]
         fn invalidates_non_numeric_check_digit() { assert!(!valid_str("401288888888188G")); }
         #[test]
