@@ -53,6 +53,10 @@ mod tests {
             assert_eq!(1, calculate_check_digit("401288888888188").unwrap());
         }
         #[test]
+        fn calculates_for_wikipedia_example() {
+            assert_eq!(3, calculate_check_digit("7992739871").unwrap());
+        }
+        #[test]
         fn calculates_for_super_simple_examples() {
             assert_eq!(2, calculate_check_digit("4").unwrap());
             assert_eq!(1, calculate_check_digit("14").unwrap());
