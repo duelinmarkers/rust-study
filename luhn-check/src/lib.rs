@@ -20,16 +20,6 @@ pub fn calculate_check_digit(partial_num: &str) -> Option<u32> {
 }
 
 /// Performs the checksum on `s`.
-// pub fn valid_str(s: &str) -> bool {
-//     match s.chars().last() {
-//         None => false,
-//         Some(last_char) => match last_char.to_digit(10) {
-//             None => false,
-//             some_digit => some_digit == calculate_check_digit(butlast(1, s))
-//         }
-//     }
-// }
-
 pub fn valid_str(num: &str) -> bool {
     num.chars().last()
         .and_then(|last_char| { last_char.to_digit(10) })
