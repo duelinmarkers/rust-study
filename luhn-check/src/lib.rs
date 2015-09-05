@@ -7,27 +7,26 @@ pub fn calculate_check_digit(partial_num: &str) -> Option<u32> {
     if partial_num.is_empty() {
         return None;
     }
-    (0..).zip(partial_num.chars().rev()).fold(Some(0), |result, (index, c)| {
-        result.and_then(|sum| {
-            c.to_digit(10).map(|d| {
-                sum + if (index % 2) == 0 {
-                    sum_digits(d * 2)
-                } else {
-                    d
-                }
-            })
-        })
-    }).map(|sum| { 10 - (sum % 10) })
+    partial_num.chars().rev().zip(0..)
+        .fold(Some(0), |result, (c, index)|
+              result.and_then(|sum|
+                              c.to_digit(10)
+                              .map(|d|
+                                   sum + if (index % 2) == 0 {
+                                       sum_digits(d * 2)
+                                   } else {
+                                       d
+                                   })))
+        .map(|sum| 10 - (sum % 10))
 }
 
 /// Verifies that `num` satisfies the Luhn check.
 pub fn valid_str(num: &str) -> bool {
     num.chars().last()
-        .and_then(|last_char| { last_char.to_digit(10) })
-        .map_or(false, |digit| {
-            calculate_check_digit(butlast(1, num))
-                .map_or(false, |real_digit| { digit == real_digit })
-        })
+        .and_then(|last_char| last_char.to_digit(10))
+        .map_or(false, |digit|
+                calculate_check_digit(butlast(1, num))
+                .map_or(false, |real_digit| digit == real_digit))
 }
 
 fn sum_digits(i: u32) -> u32 {
