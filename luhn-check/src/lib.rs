@@ -90,6 +90,8 @@ mod tests {
     #[test]
     fn sum_digits_works() {
         use super::sum_digits;
+        assert_eq!(0, sum_digits(0));
+        assert_eq!(1, sum_digits(1));
         assert_eq!(5, sum_digits(23));
         assert_eq!(6, sum_digits(123));
         assert_eq!(18, sum_digits(54333));
